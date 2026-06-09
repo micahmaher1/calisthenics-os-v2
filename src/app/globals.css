@@ -1,0 +1,174 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bar-width: 0%;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #444; }
+
+/* ── Selection ──────────────────────────────────────────────────────────────── */
+::selection { background: rgba(74, 222, 128, 0.3); color: #fff; }
+
+/* ── Noise Texture ──────────────────────────────────────────────────────────── */
+.noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+/* ── Progress Bar Animation ─────────────────────────────────────────────────── */
+.progress-bar {
+  animation: barFill 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes barFill {
+  from { width: 0%; }
+  to { width: var(--bar-width); }
+}
+
+/* ── Card Shimmer ───────────────────────────────────────────────────────────── */
+.shimmer {
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255,255,255,0.03) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Stagger Animation ──────────────────────────────────────────────────────── */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+
+/* ── XP Flash ───────────────────────────────────────────────────────────────── */
+@keyframes xpFlash {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.xp-flash { animation: xpFlash 0.4s ease; }
+
+/* ── Glow Pulse ─────────────────────────────────────────────────────────────── */
+.glow-green { box-shadow: 0 0 24px rgba(74, 222, 128, 0.15); }
+.glow-green-strong { box-shadow: 0 0 40px rgba(74, 222, 128, 0.25); }
+
+/* ── Fast Shimmer ───────────────────────────────────────────────────────────── */
+.animate-shimmer-fast {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* ── Modal slide-up ─────────────────────────────────────────────────────────── */
+@keyframes modal-up {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+.animate-modal-up { animation: modal-up 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* ── Number pop ─────────────────────────────────────────────────────────────── */
+@keyframes num-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  70%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.animate-num-pop { animation: num-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+/* ── Achievement Animations ─────────────────────────────────────────────────── */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-spin-slow { animation: spin-slow 4s linear infinite; }
+
+@keyframes ach-slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ach-slide-up { animation: ach-slide-up 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+@keyframes ach-glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(234, 179, 8, 0.3); }
+  50%       { box-shadow: 0 0 40px rgba(234, 179, 8, 0.6); }
+}
+.ach-glow-legendary { animation: ach-glow-pulse 2s ease-in-out infinite; }
+
+/* Transition duration utility */
+.duration-350 { transition-duration: 350ms; }
+
+/* ── Theme CSS Variables ────────────────────────────────────────────────────── */
+:root {
+  --ta: 74 222 128;        /* accent RGB — default emerald */
+  --ta-dark: 22 163 74;
+  --ta-glow: rgba(74, 222, 128, 0.3);
+}
+
+[data-theme="crimson"]  { --ta: 248 113 113; --ta-dark: 185 28 28;  --ta-glow: rgba(248,113,113,0.3); }
+[data-theme="midnight"] { --ta: 129 140 248; --ta-dark: 79 70 229;  --ta-glow: rgba(129,140,248,0.3); }
+[data-theme="gold"]     { --ta: 251 191 36;  --ta-dark: 180 130 6;  --ta-glow: rgba(251,191,36,0.3);  }
+[data-theme="neon"]     { --ta: 56 189 248;  --ta-dark: 2 132 199;  --ta-glow: rgba(56,189,248,0.3);  }
+[data-theme="obsidian"] { --ta: 167 139 250; --ta-dark: 109 40 217; --ta-glow: rgba(167,139,250,0.3); }
+
+/* Elements that respond to the active theme */
+.t-text   { color: rgb(var(--ta)); }
+.t-border { border-color: rgb(var(--ta) / 0.35); }
+.t-bg     { background-color: rgb(var(--ta) / 0.08); }
+.t-glow   { box-shadow: 0 0 24px var(--ta-glow); }
+.t-bar    { background: linear-gradient(90deg, rgb(var(--ta-dark)), rgb(var(--ta))); }
+.t-line   { background: linear-gradient(90deg, transparent, rgb(var(--ta) / 0.6), transparent); }
+.t-ring   { box-shadow: 0 0 0 2px rgb(var(--ta) / 0.5), 0 0 16px var(--ta-glow); }
+
+/* ── Shop Purchase Animation ─────────────────────────────────────────────────── */
+@keyframes purchase-pop {
+  0%   { transform: scale(0.8); opacity: 0; }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+.animate-purchase-pop { animation: purchase-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+@keyframes coin-drain {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-20px) scale(0.8); opacity: 0; }
+}
+.animate-coin-drain { animation: coin-drain 0.6s ease-out forwards; }
+
+/* ── Record break flash ─────────────────────────────────────────────────────── */
+@keyframes pr-flash {
+  0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+  40%  { box-shadow: 0 0 0 6px rgba(74,222,128,0.35); }
+  100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+}
+.animate-pr-flash { animation: pr-flash 0.7s ease-out forwards; }
+
+/* ── Fade-up (for quest/record toasts) ──────────────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.3s ease forwards; }
+
+/* ── Scrollbar hide utility ─────────────────────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

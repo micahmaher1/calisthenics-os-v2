@@ -1,0 +1,9 @@
+{
+  "/page": "app/page.js",
+  "/quests/page": "app/quests/page.js",
+  "/records/page": "app/records/page.js",
+  "/shop/page": "app/shop/page.js",
+  "/progress/page": "app/progress/page.js",
+  "/tree/page": "app/tree/page.js",
+  "/achievements/page": "app/achievements/page.js"
+}

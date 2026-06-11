@@ -3,20 +3,28 @@
 import { useEffect, useState, useCallback } from "react";
 import { loadState } from "@/lib/storage";
 import { loadRecordsState, saveRecordsState, addCustomRecord, updateCustomRecord, deleteCustomRecord } from "@/lib/records-storage";
-import { evaluateRecords, buildMilestoneGroups, buildInsights } from "@/lib/records-engine";
+import {
+  evaluateRecords, buildMilestoneGroups, buildInsights,
+  buildCategoryStrengths, buildBadges, getTopRecords, getRecentPRs,
+} from "@/lib/records-engine";
 import { RecordsState, CustomRecord, SkillMilestone } from "@/lib/records-types";
 import { AppState } from "@/lib/types";
-import { getRankLabel } from "@/lib/xp";
+import PageHeader from "@/components/ui/PageHeader";
 import Header from "@/components/Header";
+import { getRankLabel } from "@/lib/xp";
 import RecordCard from "./RecordCard";
 import MilestoneTracker from "./MilestoneTracker";
 import RecordTimeline from "./RecordTimeline";
 import InsightsSection from "./InsightsSection";
+import CategoryRecordsSection from "./CategoryRecordsSection";
+import RecordBadgesSection from "./RecordBadgesSection";
+import CategoryStrengthsCard from "./CategoryStrengthsCard";
 
-type Tab = "records" | "milestones" | "skills" | "timeline" | "insights" | "custom";
+type Tab = "records" | "strengths" | "milestones" | "skills" | "timeline" | "insights" | "custom";
 
 const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: "records",    label: "Records",    icon: "🏅" },
+  { key: "strengths",  label: "Strengths",  icon: "📊" },
   { key: "milestones", label: "Milestones", icon: "🎯" },
   { key: "skills",     label: "Skills",     icon: "⭐" },
   { key: "timeline",   label: "Timeline",   icon: "📅" },
@@ -24,12 +32,25 @@ const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: "custom",     label: "Custom",     icon: "⚙️" },
 ];
 
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const d = Math.floor(diff / 86400000);
+  if (d === 0) return "today";
+  if (d === 1) return "yesterday";
+  return `${d} days ago`;
+}
+
+const UNIT_SHORT: Record<string, string> = {
+  reps: "", seconds: "s", minutes: "min", count: "", custom: "",
+};
+
 export default function RecordsPage() {
   const [appState,     setAppState]     = useState<AppState | null>(null);
   const [recState,     setRecState]     = useState<RecordsState | null>(null);
   const [activeTab,    setActiveTab]    = useState<Tab>("records");
+  const [level,        setLevel]        = useState(1);
+  const [rank,         setRank]         = useState("Beginner");
 
-  // Custom record form
   const [showNewForm,  setShowNewForm]  = useState(false);
   const [newName,      setNewName]      = useState("");
   const [newUnit,      setNewUnit]      = useState("");
@@ -38,11 +59,11 @@ export default function RecordsPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    const app   = loadState();
+    const app = loadState();
     setAppState(app);
-
-    let rec     = loadRecordsState();
-    // Evaluate records from current workouts
+    setLevel(app.level);
+    setRank(getRankLabel(app.level));
+    let rec = loadRecordsState();
     const { newState } = evaluateRecords(rec, app.workouts);
     rec = newState;
     saveRecordsState(rec);
@@ -89,16 +110,18 @@ export default function RecordsPage() {
     );
   }
 
-  const rank        = getRankLabel(appState.level);
-  const records     = Object.values(recState.records);
-  const milGroups   = buildMilestoneGroups(recState);
-  const insights    = buildInsights(recState);
-  const skillMiles  = Object.values(recState.skillMilestones);
-  const achievedSkills   = skillMiles.filter((s) => s.achieved);
-  const unachivedSkills  = skillMiles.filter((s) => !s.achieved);
+  const records         = Object.values(recState.records);
+  const milGroups       = buildMilestoneGroups(recState);
+  const insights        = buildInsights(recState);
+  const skillMiles      = Object.values(recState.skillMilestones);
+  const achievedSkills  = skillMiles.filter((s) => s.achieved);
+  const unachivedSkills = skillMiles.filter((s) => !s.achieved);
+  const strengths       = buildCategoryStrengths(recState);
+  const badges          = buildBadges(recState);
+  const topRecords      = getTopRecords(recState, 3);
+  const recentPRs       = getRecentPRs(recState, 3);
 
-  // Stats for hero
-  const totalRecords   = records.filter((r) => r.current !== null).length;
+  const totalRecords    = records.filter((r) => r.current !== null).length;
   const totalMilestones = milGroups.reduce((acc, g) => acc + g.milestones.filter((m) => m.achieved).length, 0);
   const totalSkillMiles = achievedSkills.length;
   const totalPossible   = milGroups.reduce((acc, g) => acc + g.milestones.length, 0);
@@ -115,23 +138,61 @@ export default function RecordsPage() {
       />
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[900px] h-[350px] rounded-full bg-green-500/3 blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
-        <Header rank={rank} level={appState.level} />
+      <Header rank={rank} level={level} />
 
-        {/* Page header */}
-        <div className="mt-8 mb-6">
-          <p className="font-mono text-[9px] uppercase tracking-[0.35em] text-white/30 mb-1">Personal Hall of Fame</p>
-          <h1 className="font-display text-4xl sm:text-5xl text-white tracking-wider mb-2">RECORDS</h1>
-          <p className="font-body text-sm text-white/40">Your best performances, all in one place.</p>
-        </div>
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+
+        <PageHeader
+          icon="🏆"
+          title="Records"
+          subtitle="Personal Hall of Fame"
+          backHref="/"
+          backLabel="Dashboard"
+        />
 
         {/* Hero stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          <HeroStat label="PRs Set"      value={totalRecords.toString()}    icon="🏅" color="t-text" />
-          <HeroStat label="Milestones"   value={`${totalMilestones}/${totalPossible}`} icon="🎯" color="text-yellow-400" />
-          <HeroStat label="Skill Badges" value={`${totalSkillMiles}/${skillMiles.length}`} icon="⭐" color="text-purple-400" />
-          <HeroStat label="Workouts"     value={appState.workouts.length.toString()} icon="🏋️" color="text-sky-400" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <HeroStat label="PRs Set"      value={totalRecords.toString()}                         icon="🏅" color="t-text"         />
+          <HeroStat label="Milestones"   value={`${totalMilestones}/${totalPossible}`}           icon="🎯" color="text-yellow-400" />
+          <HeroStat label="Skill Badges" value={`${totalSkillMiles}/${skillMiles.length}`}       icon="⭐" color="text-purple-400" />
+          <HeroStat label="Workouts"     value={appState.workouts.length.toString()}             icon="🏋️" color="text-sky-400"    />
         </div>
+
+        {/* Recent PR chips */}
+        {recentPRs.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap mb-6">
+            <span className="font-mono text-[8px] uppercase tracking-widest text-white/25 mr-1">Recent PRs:</span>
+            {recentPRs.map((r) => {
+              const ul   = UNIT_SHORT[r.unit] ?? r.unit;
+              const date = r.current?.dateAchieved ? timeAgo(r.current.dateAchieved) : "";
+              return (
+                <span
+                  key={r.exerciseName}
+                  className="flex items-center gap-1 px-2.5 py-1 bg-surface-800 border border-white/10 rounded-full font-mono text-[8px] text-white/60"
+                >
+                  <span>🆕</span>
+                  <span>{r.current?.value}{ul} {r.exerciseName}</span>
+                  <span className="text-white/30">· {date}</span>
+                </span>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Hall of Fame */}
+        {topRecords.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-lg">🏆</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-white/50">Hall of Fame</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {topRecords.map((r) => (
+                <RecordCard key={r.exerciseName} record={r} isTopRecord />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-1 scrollbar-hide">
@@ -154,7 +215,7 @@ export default function RecordsPage() {
         {/* ── Records tab ─────────────────────────────────────────────── */}
         {activeTab === "records" && (
           <>
-            {records.length === 0 ? (
+            {records.filter((r) => r.current !== null).length === 0 ? (
               <EmptyState
                 icon="🏅"
                 title="No records yet"
@@ -163,18 +224,22 @@ export default function RecordsPage() {
                   : "Log more workouts with specific exercises to build your record history."}
               />
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {records
-                  .filter((r) => r.current !== null)
-                  .sort((a, b) => (a.exerciseName > b.exerciseName ? 1 : -1))
-                  .map((record, i) => (
-                    <div key={record.exerciseName} className="animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
-                      <RecordCard record={record} />
-                    </div>
-                  ))}
+              <div className="space-y-2">
+                <CategoryRecordsSection records={recState.records} category="push" />
+                <CategoryRecordsSection records={recState.records} category="pull" />
+                <CategoryRecordsSection records={recState.records} category="core" />
+                <CategoryRecordsSection records={recState.records} category="skill" />
               </div>
             )}
           </>
+        )}
+
+        {/* ── Strengths tab ────────────────────────────────────────────── */}
+        {activeTab === "strengths" && (
+          <div className="space-y-6">
+            <CategoryStrengthsCard strengths={strengths} />
+            <RecordBadgesSection badges={badges} />
+          </div>
         )}
 
         {/* ── Milestones tab ──────────────────────────────────────────── */}
@@ -417,7 +482,6 @@ function CustomRecordCard({
         <p className="font-mono text-[9px] text-white/25 mb-3">No value set yet</p>
       )}
 
-      {/* Sparkline */}
       {histSlice.length > 1 && (
         <div className="flex items-end gap-0.5 h-5 mb-3">
           {histSlice.map((h, i) => (

@@ -2,6 +2,7 @@ import { Workout } from "./types";
 import {
   RecordsState, TrackedRecord, RecordCategory, Milestone, MilestoneGroup,
   SkillMilestone, NewRecordResult, RecordHistoryEntry,
+  RecordDisplayCategory, CategoryStrength, RecordBadge,
 } from "./records-types";
 
 // ─── Skill milestone definitions ─────────────────────────────────────────────
@@ -97,6 +98,46 @@ export const SKILL_MILESTONES_DEF: SkillMilestoneDef[] = [
     xpReward: 500,
     detect: (ws) => ws.length >= 100,
   },
+  {
+    id: "first_chinup",
+    name: "First Chin-Up",
+    description: "Logged your first chin-up rep",
+    icon: "🙌",
+    xpReward: 100,
+    detect: (ws) => ws.some((w) => matchesExercise(w, "chin-up") && w.reps >= 1),
+  },
+  {
+    id: "first_muscleup",
+    name: "First Muscle-Up",
+    description: "Achieved your first muscle-up",
+    icon: "🔥",
+    xpReward: 300,
+    detect: (ws) => ws.some((w) => /muscle.?up/i.test(w.name) && w.reps >= 1),
+  },
+  {
+    id: "first_handstand_10s",
+    name: "First 10s Handstand",
+    description: "Held a handstand for 10 seconds",
+    icon: "🤸",
+    xpReward: 150,
+    detect: (ws) => ws.some((w) => /handstand/i.test(w.name) && w.reps >= 10),
+  },
+  {
+    id: "first_lsit_15s",
+    name: "First L-Sit (15 sec)",
+    description: "Held an L-sit for 15 seconds",
+    icon: "🧘",
+    xpReward: 150,
+    detect: (ws) => ws.some((w) => /l.?sit/i.test(w.name) && w.reps >= 15),
+  },
+  {
+    id: "first_front_lever",
+    name: "First Front Lever Hold",
+    description: "Held a front lever for 5 seconds",
+    icon: "⚡",
+    xpReward: 400,
+    detect: (ws) => ws.some((w) => /front.?lever/i.test(w.name) && w.reps >= 5),
+  },
 ];
 
 // ─── Milestone thresholds ─────────────────────────────────────────────────────
@@ -109,6 +150,96 @@ interface MilestoneDef {
 }
 
 export const MILESTONE_DEFS: MilestoneDef[] = [
+  {
+    exerciseName: "Chin-Ups",
+    icon: "🙌",
+    unit: "reps",
+    thresholds: [
+      { value: 5,  label: "5 Chin-Ups",  xp: 50,  coins: 15 },
+      { value: 10, label: "10 Chin-Ups", xp: 100, coins: 30 },
+      { value: 15, label: "15 Chin-Ups", xp: 150, coins: 50 },
+      { value: 20, label: "20 Chin-Ups", xp: 200, coins: 70 },
+    ],
+  },
+  {
+    exerciseName: "Muscle-Ups",
+    icon: "🔥",
+    unit: "reps",
+    thresholds: [
+      { value: 1,  label: "1 Muscle-Up",   xp: 150, coins: 50  },
+      { value: 3,  label: "3 Muscle-Ups",  xp: 200, coins: 70  },
+      { value: 5,  label: "5 Muscle-Ups",  xp: 300, coins: 100 },
+      { value: 10, label: "10 Muscle-Ups", xp: 500, coins: 150 },
+    ],
+  },
+  {
+    exerciseName: "Handstand Hold",
+    icon: "🤸",
+    unit: "seconds",
+    thresholds: [
+      { value: 10,  label: "10s Handstand",   xp: 50,  coins: 15  },
+      { value: 30,  label: "30s Handstand",   xp: 100, coins: 30  },
+      { value: 60,  label: "60s Handstand",   xp: 200, coins: 60  },
+      { value: 90,  label: "90s Handstand",   xp: 300, coins: 100 },
+      { value: 120, label: "2 Min Handstand", xp: 500, coins: 150 },
+    ],
+  },
+  {
+    exerciseName: "L-Sit",
+    icon: "🧘",
+    unit: "seconds",
+    thresholds: [
+      { value: 10, label: "10s L-Sit", xp: 50,  coins: 15  },
+      { value: 20, label: "20s L-Sit", xp: 100, coins: 30  },
+      { value: 30, label: "30s L-Sit", xp: 150, coins: 50  },
+      { value: 60, label: "60s L-Sit", xp: 300, coins: 100 },
+    ],
+  },
+  {
+    exerciseName: "Hollow Hold",
+    icon: "🌊",
+    unit: "seconds",
+    thresholds: [
+      { value: 20, label: "20s Hollow Hold", xp: 25,  coins: 10 },
+      { value: 30, label: "30s Hollow Hold", xp: 50,  coins: 15 },
+      { value: 60, label: "60s Hollow Hold", xp: 100, coins: 30 },
+      { value: 90, label: "90s Hollow Hold", xp: 200, coins: 60 },
+    ],
+  },
+  {
+    exerciseName: "Hanging Leg Raises",
+    icon: "🦵",
+    unit: "reps",
+    thresholds: [
+      { value: 5,  label: "5 Leg Raises",  xp: 25,  coins: 10 },
+      { value: 10, label: "10 Leg Raises", xp: 50,  coins: 15 },
+      { value: 15, label: "15 Leg Raises", xp: 100, coins: 30 },
+      { value: 20, label: "20 Leg Raises", xp: 150, coins: 50 },
+      { value: 25, label: "25 Leg Raises", xp: 200, coins: 70 },
+    ],
+  },
+  {
+    exerciseName: "Front Lever Hold",
+    icon: "⚡",
+    unit: "seconds",
+    thresholds: [
+      { value: 5,  label: "5s Front Lever",  xp: 150, coins: 50  },
+      { value: 10, label: "10s Front Lever", xp: 250, coins: 80  },
+      { value: 20, label: "20s Front Lever", xp: 400, coins: 125 },
+      { value: 30, label: "30s Front Lever", xp: 600, coins: 200 },
+    ],
+  },
+  {
+    exerciseName: "Human Flag",
+    icon: "🚩",
+    unit: "seconds",
+    thresholds: [
+      { value: 3,  label: "3s Human Flag",  xp: 200, coins: 70  },
+      { value: 5,  label: "5s Human Flag",  xp: 300, coins: 100 },
+      { value: 10, label: "10s Human Flag", xp: 500, coins: 150 },
+      { value: 20, label: "20s Human Flag", xp: 800, coins: 250 },
+    ],
+  },
   {
     exerciseName: "Push-ups",
     icon: "🤜",
@@ -498,4 +629,212 @@ export function buildInsights(state: RecordsState): RecordInsight[] {
   }
 
   return insights.slice(0, 6);
+}
+
+// ─── Display category helpers ─────────────────────────────────────────────────
+
+const DISPLAY_CATEGORY_MAP: { pattern: RegExp; cat: RecordDisplayCategory }[] = [
+  { pattern: /push.?up|pike.?push|handstand.?push|planche|dip/i,   cat: "push" },
+  { pattern: /pull.?up|chin.?up|muscle.?up|row|front.?lever/i,     cat: "pull" },
+  { pattern: /plank|l.?sit|hollow|leg.?raise|dragon.?flag|ab/i,    cat: "core" },
+  { pattern: /handstand|human.?flag|frog.?stand|crow/i,            cat: "skill" },
+];
+
+export function getDisplayCategory(exerciseName: string): RecordDisplayCategory {
+  for (const { pattern, cat } of DISPLAY_CATEGORY_MAP) {
+    if (pattern.test(exerciseName)) return cat;
+  }
+  return "push";
+}
+
+const EXPECTED_MAX: Record<string, number> = {
+  "push-ups": 100, "pull-ups": 30, "chin-ups": 25, "dips": 50,
+  "plank": 300, "dead hang": 300, "l-sit": 60, "hollow hold": 90,
+  "muscle-ups": 10, "handstand hold": 120, "human flag": 20,
+  "front lever hold": 30, "hanging leg raises": 25,
+};
+
+function getExpectedMax(exerciseName: string): number {
+  const lower = exerciseName.toLowerCase();
+  for (const [key, val] of Object.entries(EXPECTED_MAX)) {
+    if (lower.includes(key)) return val;
+  }
+  return 50;
+}
+
+const CATEGORY_META: Record<RecordDisplayCategory, { label: string; icon: string; color: string; border: string; bg: string }> = {
+  push:  { label: "Push",  icon: "🔵", color: "text-orange-400", border: "border-orange-500/30", bg: "bg-orange-500/5" },
+  pull:  { label: "Pull",  icon: "🟢", color: "text-sky-400",    border: "border-sky-500/30",    bg: "bg-sky-500/5"   },
+  core:  { label: "Core",  icon: "🟡", color: "text-teal-400",   border: "border-teal-500/30",   bg: "bg-teal-500/5"  },
+  skill: { label: "Skill", icon: "🟣", color: "text-purple-400", border: "border-purple-500/30", bg: "bg-purple-500/5"},
+};
+
+export function buildCategoryStrengths(state: RecordsState): CategoryStrength[] {
+  const cats: RecordDisplayCategory[] = ["push", "pull", "core", "skill"];
+  return cats.map((cat) => {
+    const meta = CATEGORY_META[cat];
+    const matching = Object.values(state.records).filter(
+      (r) => r.current !== null && getDisplayCategory(r.exerciseName) === cat,
+    );
+
+    let score = 0;
+    let topRecord: CategoryStrength["topRecord"] = null;
+
+    if (matching.length > 0) {
+      const scores = matching.map((r) => {
+        const max = getExpectedMax(r.exerciseName);
+        return Math.min(100, ((r.current?.value ?? 0) / max) * 100);
+      });
+      score = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+
+      const best = matching.reduce((a, b) =>
+        (a.current?.value ?? 0) / getExpectedMax(a.exerciseName) >
+        (b.current?.value ?? 0) / getExpectedMax(b.exerciseName)
+          ? a : b,
+      );
+      topRecord = best.current
+        ? { exerciseName: best.exerciseName, value: best.current.value, unit: best.unit }
+        : null;
+    }
+
+    return { id: cat, label: meta.label, icon: meta.icon, score, color: meta.color, border: meta.border, bg: meta.bg, topRecord };
+  });
+}
+
+export function buildBadges(state: RecordsState): RecordBadge[] {
+  const records = state.records;
+  const sm      = state.skillMilestones;
+
+  const getVal = (name: string) => {
+    const r = Object.values(records).find((r) =>
+      r.exerciseName.toLowerCase().includes(name.toLowerCase()),
+    );
+    return r?.current?.value ?? 0;
+  };
+
+  const badges: RecordBadge[] = [
+    {
+      id: "first_pr",
+      name: "First PR",
+      icon: "🏅",
+      description: "Set your first personal record",
+      earned: Object.values(records).some((r) => r.current !== null),
+      earnedDate: Object.values(records).find((r) => r.current !== null)?.current?.dateAchieved,
+      rarity: "common",
+    },
+    {
+      id: "ten_pullups_badge",
+      name: "10 Pull-Ups",
+      icon: "💪",
+      description: "Achieved 10 pull-ups in a set",
+      earned: getVal("pull-up") >= 10 || getVal("pull up") >= 10,
+      rarity: "rare",
+    },
+    {
+      id: "twenty_pullups_badge",
+      name: "20 Pull-Ups",
+      icon: "🏅",
+      description: "Achieved 20 pull-ups in a set",
+      earned: getVal("pull-up") >= 20 || getVal("pull up") >= 20,
+      rarity: "epic",
+    },
+    {
+      id: "fifty_pushups_badge",
+      name: "50 Push-Ups",
+      icon: "🤜",
+      description: "Achieved 50 push-ups in a set",
+      earned: getVal("push-up") >= 50 || getVal("push up") >= 50,
+      rarity: "rare",
+    },
+    {
+      id: "hundred_pushups_badge",
+      name: "100 Push-Ups",
+      icon: "💯",
+      description: "The century mark — 100 push-ups",
+      earned: getVal("push-up") >= 100 || getVal("push up") >= 100,
+      rarity: "legendary",
+    },
+    {
+      id: "plank_master",
+      name: "Plank Master",
+      icon: "🧘",
+      description: "Held a plank for 2 minutes (120s)",
+      earned: getVal("plank") >= 120,
+      rarity: "rare",
+    },
+    {
+      id: "first_muscleup_badge",
+      name: "First Muscle-Up",
+      icon: "🔥",
+      description: "Achieved your first muscle-up",
+      earned: sm["first_muscleup"]?.achieved ?? false,
+      earnedDate: sm["first_muscleup"]?.dateAchieved ?? undefined,
+      rarity: "epic",
+    },
+    {
+      id: "handstand_badge",
+      name: "Handstand 30s",
+      icon: "🤸",
+      description: "Held a handstand for 30 seconds",
+      earned: getVal("handstand") >= 30,
+      rarity: "epic",
+    },
+    {
+      id: "lsit_badge",
+      name: "L-Sit 30s",
+      icon: "🪑",
+      description: "Held an L-sit for 30 seconds",
+      earned: getVal("l-sit") >= 30 || getVal("l sit") >= 30,
+      rarity: "rare",
+    },
+    {
+      id: "front_lever_badge",
+      name: "Front Lever",
+      icon: "⚡",
+      description: "Achieved a front lever hold",
+      earned: sm["first_front_lever"]?.achieved ?? false,
+      earnedDate: sm["first_front_lever"]?.dateAchieved ?? undefined,
+      rarity: "legendary",
+    },
+    {
+      id: "five_records",
+      name: "Record Collector",
+      icon: "📚",
+      description: "Set records in 5 different exercises",
+      earned: Object.values(records).filter((r) => r.current !== null).length >= 5,
+      rarity: "common",
+    },
+    {
+      id: "consistency_warrior",
+      name: "Consistency Warrior",
+      icon: "⚔️",
+      description: "Logged workouts for 10 different exercises",
+      earned: Object.values(records).filter((r) => r.current !== null).length >= 10,
+      rarity: "rare",
+    },
+  ];
+
+  return badges;
+}
+
+export function getTopRecords(state: RecordsState, n = 3): TrackedRecord[] {
+  return Object.values(state.records)
+    .filter((r) => r.current !== null)
+    .sort((a, b) => {
+      const scoreA = (a.current?.value ?? 0) / getExpectedMax(a.exerciseName);
+      const scoreB = (b.current?.value ?? 0) / getExpectedMax(b.exerciseName);
+      return scoreB - scoreA;
+    })
+    .slice(0, n);
+}
+
+export function getRecentPRs(state: RecordsState, n = 3): TrackedRecord[] {
+  return Object.values(state.records)
+    .filter((r) => r.current !== null)
+    .sort((a, b) => {
+      const ta = a.current?.dateAchieved ?? "";
+      const tb = b.current?.dateAchieved ?? "";
+      return tb.localeCompare(ta);
+    })
+    .slice(0, n);
 }

@@ -83,6 +83,31 @@ export interface RecordsState {
   lastEvaluated:  string | null;
 }
 
+// ─── New display types ────────────────────────────────────────────────────────
+
+export type RecordDisplayCategory = "push" | "pull" | "core" | "skill";
+
+export interface RecordBadge {
+  id:          string;
+  name:        string;
+  icon:        string;
+  description: string;
+  earned:      boolean;
+  earnedDate?: string;
+  rarity:      "common" | "rare" | "epic" | "legendary";
+}
+
+export interface CategoryStrength {
+  id:       RecordDisplayCategory;
+  label:    string;
+  icon:     string;
+  score:    number;
+  color:    string;
+  border:   string;
+  bg:       string;
+  topRecord?: { exerciseName: string; value: number; unit: string } | null;
+}
+
 export interface NewRecordResult {
   exerciseName: string;
   newValue:     number;

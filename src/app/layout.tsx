@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bebas_Neue, DM_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "@/components/shop/ThemeProvider";
+import MobileBottomNav from "@/components/ui/MobileBottomNav";
 
 const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
@@ -35,6 +36,7 @@ export default function RootLayout({
       >
         <ThemeProvider />
         {children}
+        <MobileBottomNav />
       </body>
     </html>
   );

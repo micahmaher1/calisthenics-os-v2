@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { buildRecentActivity } from "@/lib/training-hub-utils";
 
 export default function RecentProgressTimeline({ recentActivity }: { recentActivity: ReturnType<typeof buildRecentActivity> }) {
@@ -24,6 +25,9 @@ export default function RecentProgressTimeline({ recentActivity }: { recentActiv
           </div>
         ))}
       </div>
+      <Link href="/progress" className="mt-3 flex items-center justify-end gap-1 text-xs text-sky-400 hover:text-sky-300 transition-colors font-mono">
+        VIEW ALL →
+      </Link>
     </div>
   );
 }

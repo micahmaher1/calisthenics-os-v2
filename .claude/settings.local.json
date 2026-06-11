@@ -6,7 +6,9 @@
       "Bash(curl -s http://localhost:3002)",
       "Bash(pkill -f \"next dev\")",
       "Bash(npx tsc *)",
-      "Bash(echo \"EXIT: $?\")"
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(git stash *)",
+      "Bash(git checkout *)"
     ]
   }
 }

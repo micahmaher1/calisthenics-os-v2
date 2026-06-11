@@ -30,5 +30,5 @@ export const NAV_ITEMS: NavItem[] = [
 
 // Bottom nav items (mobile) — max 5
 export const BOTTOM_NAV_ITEMS: NavItem[] = NAV_ITEMS.filter((n) =>
-  ["/", "/workouts", "/journeys", "/quests", "/profile"].includes(n.href)
+  ["/", "/quests", "/workouts", "/tree", "/profile"].includes(n.href)
 );

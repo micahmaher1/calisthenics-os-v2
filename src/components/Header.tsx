@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { loadAvatar } from "@/lib/profile-storage";
-import { loadProfile } from "@/lib/profile-storage";
+import { usePathname } from "next/navigation";
+import { loadAvatar, loadProfile } from "@/lib/profile-storage";
 import { getInitials } from "@/lib/profile-utils";
 
 interface HeaderProps {
@@ -11,9 +11,46 @@ interface HeaderProps {
   level: number;
 }
 
+const NAV_ITEMS = [
+  { href: "/",                 label: "Hub",       icon: "⚡", color: "green"   },
+  { href: "/coach",            label: "Coach",     icon: "🤖", color: "purple"  },
+  { href: "/quests",           label: "Quests",    icon: "⚔️",  color: "orange"  },
+  { href: "/records",          label: "Records",   icon: "📊", color: "green"   },
+  { href: "/workouts",         label: "Workouts",  icon: "💪", color: "green"   },
+  { href: "/journeys",         label: "Journeys",  icon: "🗺️",  color: "cyan"    },
+  { href: "/tree",             label: "Tree",      icon: "🌳", color: "emerald" },
+  { href: "/mastery",          label: "Mastery",   icon: "⚡", color: "indigo"  },
+  { href: "/standards",        label: "Standards", icon: "🏅", color: "amber"   },
+  { href: "/skills",           label: "Skills",    icon: "🎯", color: "teal"    },
+  { href: "/legendary-skills", label: "Legendary", icon: "👑", color: "yellow"  },
+  { href: "/library",          label: "Library",   icon: "📚", color: "slate"   },
+  { href: "/titles",           label: "Titles",    icon: "🎖️",  color: "yellow"  },
+  { href: "/achievements",     label: "Achieve",   icon: "🏆", color: "yellow"  },
+  { href: "/streaks",          label: "Streaks",   icon: "🔥", color: "red"     },
+  { href: "/progress",         label: "Progress",  icon: "📈", color: "sky"     },
+  { href: "/shop",             label: "Shop",      icon: "🛒", color: "amber"   },
+];
+
+// Pre-built active/hover classes — no dynamic interpolation
+const colorMap: Record<string, { dot: string; activePill: string; activeText: string }> = {
+  green:   { dot: "bg-green-400",   activePill: "bg-green-500/10 border-green-500/30",   activeText: "text-green-400"   },
+  purple:  { dot: "bg-purple-400",  activePill: "bg-purple-500/10 border-purple-500/30", activeText: "text-purple-400"  },
+  orange:  { dot: "bg-orange-400",  activePill: "bg-orange-500/10 border-orange-500/30", activeText: "text-orange-400"  },
+  amber:   { dot: "bg-amber-400",   activePill: "bg-amber-500/10 border-amber-500/30",   activeText: "text-amber-400"   },
+  yellow:  { dot: "bg-yellow-400",  activePill: "bg-yellow-500/10 border-yellow-500/30", activeText: "text-yellow-400"  },
+  sky:     { dot: "bg-sky-400",     activePill: "bg-sky-500/10 border-sky-500/30",       activeText: "text-sky-400"     },
+  emerald: { dot: "bg-emerald-400", activePill: "bg-emerald-500/10 border-emerald-500/30", activeText: "text-emerald-400" },
+  cyan:    { dot: "bg-cyan-400",    activePill: "bg-cyan-500/10 border-cyan-500/30",     activeText: "text-cyan-400"    },
+  indigo:  { dot: "bg-indigo-400",  activePill: "bg-indigo-500/10 border-indigo-500/30", activeText: "text-indigo-400"  },
+  slate:   { dot: "bg-slate-400",   activePill: "bg-slate-500/10 border-slate-500/30",   activeText: "text-slate-300"   },
+  red:     { dot: "bg-red-400",     activePill: "bg-red-500/10 border-red-500/30",       activeText: "text-red-400"     },
+  teal:    { dot: "bg-teal-400",    activePill: "bg-teal-500/10 border-teal-500/30",     activeText: "text-teal-400"    },
+};
+
 export default function Header({ rank, level }: HeaderProps) {
-  const [avatarUrl,  setAvatarUrl]  = useState<string | null>(null);
-  const [initials,   setInitials]   = useState("?");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [initials,  setInitials]  = useState("?");
+  const pathname = usePathname();
 
   useEffect(() => {
     setAvatarUrl(loadAvatar());
@@ -22,74 +59,79 @@ export default function Header({ rank, level }: HeaderProps) {
   }, []);
 
   return (
-    <header className="flex items-center justify-between py-5 border-b border-white/5">
-      {/* Logo */}
-      <Link href="/" className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center text-lg glow-green">
-          ⚡
-        </div>
-        <div>
-          <div className="font-display text-xl tracking-widest text-white leading-none">
-            CALISTHENICS OS
-          </div>
-          <div className="font-mono text-[10px] text-white/30 tracking-widest uppercase mt-0.5">
-            v1.0 · Personal Training System
-          </div>
-        </div>
-      </Link>
+    <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-xl border-b border-white/[0.06]">
+      {/* Single unified bar */}
+      <div className="flex items-center gap-2 px-3 h-11">
 
-      {/* Nav */}
-      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide">
-        <NavLink href="/quests"       color="orange" icon="⚔️"  label="Quests"       />
-        <NavLink href="/records"      color="green"  icon="🏅"  label="Records"      />
-        <NavLink href="/shop"         color="amber"  icon="🛒"  label="Shop"         />
-        <NavLink href="/achievements" color="yellow" icon="🏆"  label="Achievements" />
-        <NavLink href="/progress"     color="sky"    icon="📈"  label="Progress"     />
-        <NavLink href="/tree"         color="purple" icon="🌳"  label="Skill Tree"   />
-
-        {/* Profile avatar link */}
+        {/* Logo — minimal */}
         <Link
-          href="/profile"
-          className="flex items-center gap-2 pl-2 ml-1 border-l border-white/8 hover:opacity-80 transition-opacity flex-shrink-0"
+          href="/"
+          className="flex items-center gap-2 flex-shrink-0 group"
         >
-          <div className="flex flex-col items-end hidden sm:flex">
-            <span className="font-mono text-[10px] text-white/30 uppercase tracking-widest">
-              {rank}
-            </span>
-            <span className="font-mono text-[9px] text-white/20">Lv. {level}</span>
+          <div className="w-6 h-6 rounded-md bg-green-500/10 border border-green-500/25 flex items-center justify-center text-[11px] transition-colors group-hover:border-green-500/50">
+            ⚡
           </div>
-          <div className="w-9 h-9 rounded-full ring-2 ring-green-500/30 overflow-hidden bg-surface-700 border border-white/10 flex items-center justify-center flex-shrink-0">
+          <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-white/70 group-hover:text-white/90 transition-colors hidden md:block">
+            CALISTHENICS<span className="text-green-400/70">.OS</span>
+          </span>
+        </Link>
+
+        {/* Divider */}
+        <div className="w-px h-4 bg-white/10 flex-shrink-0 hidden md:block" />
+
+        {/* Nav — scrollable, takes remaining space */}
+        <nav className="flex-1 flex items-center gap-0.5 overflow-x-auto scrollbar-hide min-w-0">
+          {NAV_ITEMS.map((item) => {
+            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            const c = colorMap[item.color] ?? colorMap.green;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`
+                  relative flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium
+                  whitespace-nowrap border transition-all duration-150 flex-shrink-0
+                  ${isActive
+                    ? `${c.activePill} ${c.activeText}`
+                    : "border-transparent text-white/35 hover:text-white/65 hover:bg-white/[0.04]"
+                  }
+                `}
+              >
+                {/* Active dot indicator */}
+                {isActive && (
+                  <span className={`absolute -bottom-px left-1/2 -translate-x-1/2 w-1 h-px rounded-full ${c.dot} opacity-80`} />
+                )}
+                <span className="text-[12px] leading-none">{item.icon}</span>
+                <span className="tracking-wide">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Right: level + avatar */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Level chip */}
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white/[0.04] border border-white/[0.07]">
+            <span className="font-mono text-[9px] text-white/30 uppercase tracking-widest">{rank}</span>
+            <span className="w-px h-2.5 bg-white/10" />
+            <span className="font-mono text-[9px] text-green-400/70 font-bold">Lv{level}</span>
+          </div>
+
+          {/* Avatar */}
+          <Link
+            href="/profile"
+            className="w-7 h-7 rounded-full ring-1 ring-white/10 overflow-hidden bg-slate-800 border border-white/[0.08] flex items-center justify-center hover:ring-green-500/30 transition-all flex-shrink-0"
+          >
             {avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
             ) : (
-              <span className="font-display text-sm text-white/60">{initials}</span>
+              <span className="font-mono text-[10px] text-white/50">{initials}</span>
             )}
-          </div>
-        </Link>
+          </Link>
+        </div>
+
       </div>
     </header>
-  );
-}
-
-function NavLink({ href, color, icon, label }: {
-  href: string; color: string; icon: string; label: string;
-}) {
-  const colorMap: Record<string, string> = {
-    orange: "text-orange-400 border-orange-500/20 bg-orange-500/10 hover:bg-orange-500/20",
-    yellow: "text-yellow-400 border-yellow-500/20 bg-yellow-500/10 hover:bg-yellow-500/20",
-    amber:  "text-amber-400  border-amber-500/20  bg-amber-500/10  hover:bg-amber-500/20",
-    sky:    "text-sky-400    border-sky-500/20    bg-sky-500/10    hover:bg-sky-500/20",
-    purple: "text-purple-400 border-purple-500/20 bg-purple-500/10 hover:bg-purple-500/20",
-    green:  "text-green-400  border-green-500/20  bg-green-500/10  hover:bg-green-500/20",
-  };
-  return (
-    <Link
-      href={href}
-      className={`flex items-center gap-1.5 px-2.5 py-1.5 border rounded-xl font-mono text-[9px] uppercase tracking-widest transition-all ${colorMap[color] ?? colorMap.green}`}
-    >
-      <span>{icon}</span>
-      <span className="hidden lg:inline">{label}</span>
-    </Link>
   );
 }
